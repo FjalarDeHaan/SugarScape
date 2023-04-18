@@ -1,13 +1,21 @@
 module SugarScape
-# An implementation of the Epstein & Axtell (1996) model SugarScape.
+# An implementation of the Epstein & Axtell (1996) model SugarScape. Original
+# code from:
 #
-# From:
-# https://juliadynamics.github.io/Agents.jl/v4.0/examples/sugarscape/#Sugarscape
-# No licence or authors for the code mentioned on website.
+# https://juliadynamics.github.io/AgentsExampleZoo.jl/dev/examples/sugarscape/
 #
-# Epstein, J.M., Axtell, R., 1996.
-# Growing Artificial Societies: Social Science from the Bottom up.
-# Brookings Institution Press, Washington, D.C., USA.
+# Very minor changes made by Fjalar de Haan in April 2023 to turn the tutorial
+# code into a Julia module that can be loaded using `using SugarScape` and
+# with the visualisations wrapped into functions for ease of demonstration.
+#
+# The website does not mention any licence but as Agents.jl is published under
+# an MIT licence this package is under that licence too.
+#
+# Reference
+# =========
+#
+# Epstein, J.M., Axtell, R., 1996. Growing Artificial Societies: Social Science
+# from the Bottom up. Brookings Institution Press, Washington, D.C., USA.
 
 export sugarscape, sugardash, sugarhist
 export distances, sugar_caps
