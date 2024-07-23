@@ -24,9 +24,9 @@ export move_and_collect!, replacement!
 
 using Agents
 using Random
-using GLMakie, InteractiveDynamics
+using GLMakie
 
-@agent SugarSeeker GridAgent{2} begin
+@agent struct SugarSeeker(GridAgent{2})
     vision::Int
     metabolic_rate::Int
     age::Int
@@ -67,7 +67,10 @@ function sugarscape(
                    , vision_dist = (1, 6)
                    , max_age_dist = (60, 100)
                    , max_sugar = 4
-                   , seed = 42 )
+                   , seed = nothing )
+    # If no seed provided, get the pseudo-randomness from device.
+    isnothing(seed) ? seed = rand(RandomDevice(), 0:2^16) : seed
+    rng = Xoshiro(seed)
 
     sugar_capacities = sugar_caps(dims, sugar_peaks, max_sugar, 6)
     sugar_values = deepcopy(sugar_capacities)
@@ -79,14 +82,15 @@ function sugarscape(
                      , :vision_dist => vision_dist
                      , :max_age_dist => max_age_dist
                      , :sugar_values => sugar_values
-                     , :sugar_capacities => sugar_capacities )
-    model = AgentBasedModel(
-        SugarSeeker,
-        space,
-        scheduler = Schedulers.randomly,
-        properties = properties,
-        rng = MersenneTwister(seed)
-    )
+                     , :sugar_capacities => sugar_capacities
+                     , :rng => rng )
+    model = AgentBasedModel( SugarSeeker
+                           , space
+                           , properties = properties
+                           , rng = Xoshiro(seed)
+                           , agent_step! = agent_step!
+                           , model_step! = model_step! )
+
     for _ in 1:N
         add_agent_single!(
             model,
@@ -160,9 +164,7 @@ function sugardash(model=nothing)
         model = sugarscape()
     end
     fig, ax, abmp = abmplot( model
-                           ; agent_step!
-                           , model_step!
-                           , add_controls = true
+                           ; add_controls = true
                            , figkwargs = (resolution=(800, 600)) )
     # Lift model observable for heatmap
     sugar = @lift($(abmp.model).sugar_values)
@@ -170,7 +172,8 @@ function sugardash(model=nothing)
     axhm.aspect = AxisAspect(1) # equal aspect ratio for heatmap
     Colorbar(fig[1, 3], hm, width = 15, tellheight=false)
     # Colorbar height = axis height
-    rowsize!(fig.layout, 1, axhm.scene.px_area[].widths[2])
+    #rowsize!(fig.layout, 1, axhm.scene.px_area[].widths[2])
+    rowsize!(fig.layout, 1, axhm.scene.viewport[].widths[2])
     display(fig)
     return fig, ax, abmp
 end
